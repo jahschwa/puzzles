@@ -3,6 +3,7 @@
 import random
 
 SQUARE = 'g7'
+FILE = 'chess_moves.txt'
 
 def main():
   print ''
@@ -23,13 +24,17 @@ def all_moves():
       pawn_moves.update(Pawn(sq).get_moves())
 
   print 'Total Moves: %s + %s = %s' % (
-      2*len(moves),len(pawn_moves),2*len(moves)+len(pawn_moves)
+      2*len(moves),2*len(pawn_moves),2*len(moves)+2*len(pawn_moves)
   )
 
   print ('Examples: '
       + ','.join([str(random.choice(list(moves))) for x in range(0,10)])
       +',...'
   )
+
+  with open(FILE,'w') as f:
+    f.write('\n'.join([str(x) for x in sorted(moves)])+'\n')
+    f.write('\n'.join([str(x) for x in sorted(pawn_moves)])+'\n')
 
 def sample_moves(sq):
 
@@ -125,6 +130,10 @@ class Move(object):
         (self.a==x.a and self.b==x.b) or
         (self.a==x.b and self.b==x.a)
     )
+
+  def __lt__(self,other):
+
+    return str(self)<str(other)
 
   def __contains__(self,x):
 
