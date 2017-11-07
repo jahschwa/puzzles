@@ -14,27 +14,26 @@ def main():
 
 def all_moves():
 
-  moves = set()
-  pawn_moves = set()
-  for x in range(0,8):
-    for y in range(0,8):
+  moves = []
+  s = ''
+  for y in range(0,8):
+    for x in range(0,8):
       sq = Square(x,y)
-      moves.update(Queen(sq).get_moves())
-      moves.update(Knight(sq).get_moves())
-      pawn_moves.update(Pawn(sq).get_moves())
+      m = Queen(sq).get_moves()+Knight(sq).get_moves()+Pawn(sq).get_moves()
+      moves.extend(m)
+      s += '%s ' % len(m)
+    s += '\n'
+  print s
 
-  print 'Total Moves: %s + %s = %s' % (
-      2*len(moves),2*len(pawn_moves),2*len(moves)+2*len(pawn_moves)
-  )
+  print 'Total: %s' % len(moves)
 
   print ('Examples: '
-      + ','.join([str(random.choice(list(moves))) for x in range(0,10)])
+      + ','.join([str(random.choice(moves)) for x in range(0,10)])
       +',...'
   )
 
   with open(FILE,'w') as f:
     f.write('\n'.join([str(x) for x in sorted(moves)])+'\n')
-    f.write('\n'.join([str(x) for x in sorted(pawn_moves)])+'\n')
 
 def sample_moves(sq):
 
@@ -114,7 +113,7 @@ class Move(object):
     self.b = b
     self.p = promote
 
-    if self.p and self.p not in 'rbnq':
+    if self.p and self.p not in 'rnbq':
       raise ValueError('invalid promotion "%s"' % self.p)
 
   def other(self,sq):
@@ -126,10 +125,7 @@ class Move(object):
 
   def __eq__(self,x):
 
-    return self.p==x.p and (
-        (self.a==x.a and self.b==x.b) or
-        (self.a==x.b and self.b==x.a)
-    )
+    return self.a==x.a and self.b==x.b and self.p==x.p
 
   def __lt__(self,other):
 
@@ -144,6 +140,10 @@ class Move(object):
     return '%s%s%s' % (self.a,self.b,self.p if self.p else '')
 
   __repr__ = __str__
+
+  def __hash__(self):
+
+    return hash(str(self))
 
 class Piece(object):
 
@@ -194,12 +194,13 @@ class Pawn(Piece):
 
   def get(self):
 
-    if self.y!=6:
+    if self.y not in [1,6]:
       return []
+    y = {1:0,6:7}[self.y]
 
     moves = []
     for i in range(self.x-1,self.x+2):
-      moves.append(Square(i,7))
+      moves.append(Square(i,y))
     return moves
 
   def get_moves(self):
