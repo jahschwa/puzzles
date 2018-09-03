@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #
-# [TODO] check Cage for disjoint cells
 # [TODO] fix cages>grid.size in _kk_config_gen()
 
 from itertools import permutations,combinations
@@ -76,10 +75,12 @@ class Grid:
     self.update_queue = set()
 
   # @param cage (Cage) a new Cage to validate and add to this Grid
-  # @raise ValueError if this Cage overlaps any others
+  # @raise ValueError if this Cage overlaps any others or has disjoint cells
   def add_cage(self,cage):
 
     for loc in cage.cells:
+      if loc not in self:
+        raise ValueError('cage cell %s not in Grid' % loc)
       if loc in self.cage_index:
         raise ValueError('overlap in cell %s' % loc)
 
@@ -87,6 +88,21 @@ class Grid:
     for cell in cage.cells.values():
       self.cage_index[cell.loc] = cage
 
+    # check for disjoint cells
+    cells = cage.cells.values()
+    if len(cells)>1:
+      for cell in cells:
+        (r,c) = cell.loc
+        disjoint = True
+        for neighbor in [(r-1,c),(r+1,c),(r,c-1),(r,c+1)]:
+          if neighbor in self.cage_index:
+            other = self.cage_index[neighbor]
+            if other is not None and other is cage:
+              disjoint = False
+              break
+        if disjoint:
+          raise ValueError('cage is disjoint: %s' %
+              [c.loc for c in cage.cells.values()])
 
   # set this Grid up as a Sudoku
   # @raise ValueError if this Grid's size is invalid for a Sudoku
@@ -293,6 +309,21 @@ class Grid:
   # @return (str)
   def __str__(self):
     return self.to_str()
+
+  # @param (2-tuple)
+  #   #0 (int) row
+  #   #1 (int) col
+  def __contains__(self,x):
+
+    if isinstance(x,tuple):
+      if len(x)!=2:
+        raise ValueError('tuple must be length 2')
+      (row,col) = x
+      if not isinstance(row,int) or not isinstance(col,int):
+        raise ValueError('tuple must contain int')
+      return row>=0 and row<self.size and col>=0 and col<self.size
+    else:
+      raise TypeError('argument must be 2-tuple (row,col)')
 
 ###############################################################################
 # Cage class
