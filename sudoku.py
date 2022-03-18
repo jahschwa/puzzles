@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 #
 # [TODO] fix cages>grid.size in _kk_config_gen()
+# [TODO] make rows/cols Cage objects (also add Cage.unique)
 
 from itertools import permutations,combinations
 from functools import reduce
 
 def main():
-  g = Grid(9)
-  g.make_sudoku()
+  g = Grid(9).make_sudoku()
   print(g)
   print('')
 
-  g = Grid(3)
-  g.make_kenken_from_ascii("""
+  g = Grid(3).make_kenken_from_ascii("""
     112
     332
     455
@@ -22,8 +21,7 @@ def main():
   print(g)
   print('')
 
-  g = Grid(9)
-  g.make_kenken_from_ascii("""
+  g = Grid(9).make_kenken_from_ascii("""
     123455667
     123445577
     11884997A
@@ -126,6 +124,8 @@ class Grid:
             cage.add_cell(self.rows[step*row+r][step*col+c])
         self.add_cage(cage)
 
+    return self
+
   # set this Grid up as a Kenken
   # Kenkens can be of any size, and their cages can be of any size/shape
   # each Cage has a restricting math rule, with an operator in [=+-*/] and a
@@ -193,6 +193,8 @@ class Grid:
 
     if len(self.cage_index)!=self.size**2:
       raise ValueError('some Cells do not belong to a Cage')
+
+    return self
 
   # set a cell value and eliminate possibilities
   # @param row (int)
@@ -357,6 +359,8 @@ class Cage:
   # @raise ValueError if the cell is already in this cage
   def add_cell(self,cell):
 
+    if cell.loc not in self.grid:
+      raise ValueError('invalid cell %s' % (cell.loc,))
     if cell.loc in self.cells:
       raise ValueError('duplicate cell %s' % (cell.loc,))
     self.cells[cell.loc] = cell
