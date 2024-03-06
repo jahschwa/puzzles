@@ -2,20 +2,22 @@
 #
 # $ ./recursion.py -m -30 -M 30
 #
-#   recursive_caching       :  0.000045776367188 sec
-#   iterative_dict          :  0.000144243240356 sec
-#   iterative               :  0.000149965286255 sec
-#   iterative_deque         :  0.000154018402100 sec
-#   iterative_deque_caching :  0.000386714935303 sec
-#   recursive               : 11.924983739852905 sec
+#   iterative_no_collection :  0.000093460083008 sec
+#   iterative               :  0.000176668167114 sec
+#   iterative_dict          :  0.000181674957275 sec
+#   iterative_deque         :  0.000187873840332 sec
+#   recursive_caching       :  0.000240564346313 sec
+#   iterative_deque_caching :  0.000443935394287 sec
+#   recursive               : 11.965656280517578 sec
 #
 # $ ./recursion.py -m -400 -M 400
 #
-#   recursive_caching       : 0.0004036426544189453 sec
-#   iterative               : 0.025094270706176758 sec
-#   iterative_deque         : 0.025687694549560547 sec
-#   iterative_dict          : 0.027811527252197266 sec
-#   iterative_deque_caching : 0.04084444046020508 sec
+#   iterative_no_collection : 0.01295900344848633 sec
+#   iterative               : 0.02555775642395020 sec
+#   iterative_deque         : 0.02598524093627930 sec
+#   iterative_dict          : 0.02809286117553711 sec
+#   recursive_caching       : 0.03196859359741211 sec
+#   iterative_deque_caching : 0.04169416427612305 sec
 
 
 from argparse import ArgumentParser
@@ -35,6 +37,10 @@ def main(all, min, max):
   for n in range(min, max + 1):
     results = {}
     for func in times:
+      try:
+        func.cache_clear()
+      except AttributeError:
+        pass
       (result, sec) = timeit(func, n)
       if results:
         assert result == next(iter(results.values()))
