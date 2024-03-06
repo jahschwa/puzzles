@@ -140,6 +140,17 @@ def _iterative_dict(n):
   return results[n]
 
 
+def _iterative_no_collection(n):
+
+  if n < 3:
+    return n
+
+  (a, b, c) = (0, 1, 2)
+  for _ in range(n - 2):
+    (a, b, c) = (b, c, c + 2 * b + 3 * a)
+  return c
+
+
 def get_args():
 
   ap = ArgumentParser()
