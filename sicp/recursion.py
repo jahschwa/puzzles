@@ -2,22 +2,24 @@
 #
 # $ ./recursion.py -m -30 -M 30
 #
-#   iterative_no_collection :  0.000093460083008 sec
-#   iterative_list          :  0.000176668167114 sec
-#   iterative_dict          :  0.000181674957275 sec
-#   iterative_deque         :  0.000187873840332 sec
-#   recursive_caching       :  0.000240564346313 sec
-#   iterative_deque_caching :  0.000443935394287 sec
-#   recursive               : 11.965656280517578 sec
+#   iterative_no_collection :  0.000078439712524 sec
+#   iterative_deque_maxlen  :  0.000138521194458 sec
+#   iterative_dict          :  0.000154495239258 sec
+#   iterative_list          :  0.000159025192261 sec
+#   iterative_deque         :  0.000166177749634 sec
+#   recursive_caching       :  0.000228643417358 sec
+#   iterative_deque_caching :  0.000428438186646 sec
+#   recursive               : 12.660402536392212 sec
 #
 # $ ./recursion.py -m -400 -M 400
 #
-#   iterative_no_collection : 0.01295900344848633 sec
-#   iterative_list          : 0.02555775642395020 sec
-#   iterative_deque         : 0.02598524093627930 sec
-#   iterative_dict          : 0.02809286117553711 sec
-#   recursive_caching       : 0.03196859359741211 sec
-#   iterative_deque_caching : 0.04169416427612305 sec
+#   iterative_no_collection : 0.01356840133666992 sec
+#   iterative_deque_maxlen  : 0.01883316040039063 sec
+#   iterative_list          : 0.02612996101379395 sec
+#   iterative_deque         : 0.02642154693603516 sec
+#   iterative_dict          : 0.02887105941772461 sec
+#   recursive_caching       : 0.03300261497497559 sec
+#   iterative_deque_caching : 0.04248166084289551 sec
 
 
 from argparse import ArgumentParser
@@ -116,6 +118,18 @@ def _iterative_deque(n):
   while (l := len(results)) < n + 1:
     results.append(results[l - 1] + 2 * results[l - 2] + 3 * results[l - 3])
   return results[n]
+
+
+def _iterative_deque_maxlen(n):
+
+  if n < 3:
+    return n
+
+  results = deque([0, 1, 2], maxlen=3)
+  for _ in range(n - 2):
+    results.append(results[2] + 2 * results[1] + 3 * results[0])
+
+  return results[2]
 
 
 def _iterative_deque_caching(n):
