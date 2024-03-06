@@ -2,31 +2,31 @@
 #
 # $ ./recursion.py -m -30 -M 30
 #
-#   iterative_no_collection :  0.000078439712524 sec
-#   iterative_deque_maxlen  :  0.000138521194458 sec
-#   iterative_dict          :  0.000154495239258 sec
-#   iterative_list          :  0.000159025192261 sec
-#   iterative_deque         :  0.000166177749634 sec
-#   recursive_caching       :  0.000228643417358 sec
-#   iterative_deque_caching :  0.000428438186646 sec
-#   recursive               : 12.660402536392212 sec
+#   iterative_no_collection :  0.000079687684774 sec
+#   iterative_deque_maxlen  :  0.000142939388752 sec
+#   iterative_dict          :  0.000156778842211 sec
+#   iterative_list          :  0.000160545110703 sec
+#   iterative_deque         :  0.000170182436705 sec
+#   recursive_caching       :  0.000232491642237 sec
+#   iterative_deque_caching :  0.000422552227974 sec
+#   recursive               : 12.339210778474808 sec
 #
 # $ ./recursion.py -m -400 -M 400
 #
-#   iterative_no_collection : 0.01356840133666992 sec
-#   iterative_deque_maxlen  : 0.01883316040039063 sec
-#   iterative_list          : 0.02612996101379395 sec
-#   iterative_deque         : 0.02642154693603516 sec
-#   iterative_dict          : 0.02887105941772461 sec
-#   recursive_caching       : 0.03300261497497559 sec
-#   iterative_deque_caching : 0.04248166084289551 sec
+#   iterative_no_collection : 0.01620534434914589 sec
+#   iterative_deque_maxlen  : 0.02222696319222450 sec
+#   iterative_list          : 0.03143409639596939 sec
+#   iterative_deque         : 0.03188804164528847 sec
+#   iterative_dict          : 0.03405065461993218 sec
+#   recursive_caching       : 0.03834217041730881 sec
+#   iterative_deque_caching : 0.04966166242957115 sec
 
 
 from argparse import ArgumentParser
 from collections import deque
 from functools import cache
 from math import inf
-from time import time
+from time import perf_counter
 
 
 def main(all, min, max):
@@ -49,7 +49,7 @@ def main(all, min, max):
         func.cache_clear()
       except AttributeError:
         pass
-      (result, sec) = timeit(func, n)
+      (result, sec) = time_it(func, n)
       if results and result != (expected := next(iter(results.values()))):
         done = [f.__name__ for (f, sec) in times.items() if sec > 0]
         assert False, '\n'.join((
@@ -71,11 +71,11 @@ def skip_after(limit):
   return decorator
 
 
-def timeit(func, *args, **kwargs):
+def time_it(func, *args, **kwargs):
 
-  start = time()
+  start = perf_counter()
   result = func(*args, **kwargs)
-  return (result, time() - start)
+  return (result, perf_counter() - start)
 
 
 @skip_after(30)
