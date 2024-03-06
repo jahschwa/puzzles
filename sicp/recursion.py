@@ -48,8 +48,13 @@ def main(all, min, max):
       except AttributeError:
         pass
       (result, sec) = timeit(func, n)
-      if results:
-        assert result == next(iter(results.values()))
+      if results and result != (expected := next(iter(results.values()))):
+        done = [f.__name__ for (f, sec) in times.items() if sec > 0]
+        assert False, '\n'.join((
+          '',
+          f'  observed: f({n}) = {result} from {func.__name__}',
+          f'  expected: f({n}) = {expected} from {", ".join(sorted(done))}',
+        ))
       results[func] = result
       times[func] += sec
 
