@@ -3,7 +3,7 @@
 # $ ./recursion.py -m -30 -M 30
 #
 #   iterative_no_collection :  0.000093460083008 sec
-#   iterative               :  0.000176668167114 sec
+#   iterative_list          :  0.000176668167114 sec
 #   iterative_dict          :  0.000181674957275 sec
 #   iterative_deque         :  0.000187873840332 sec
 #   recursive_caching       :  0.000240564346313 sec
@@ -13,7 +13,7 @@
 # $ ./recursion.py -m -400 -M 400
 #
 #   iterative_no_collection : 0.01295900344848633 sec
-#   iterative               : 0.02555775642395020 sec
+#   iterative_list          : 0.02555775642395020 sec
 #   iterative_deque         : 0.02598524093627930 sec
 #   iterative_dict          : 0.02809286117553711 sec
 #   recursive_caching       : 0.03196859359741211 sec
@@ -91,7 +91,7 @@ def _recursive_caching(n):
   )
 
 
-def _iterative(n):
+def _iterative_list(n):
 
   if n < 3:
     return n
