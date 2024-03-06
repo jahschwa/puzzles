@@ -23,6 +23,7 @@
 from argparse import ArgumentParser
 from collections import deque
 from functools import cache
+from math import inf
 from time import time
 
 
@@ -30,8 +31,13 @@ def main(all, min, max):
 
   times = {
     func: 0
-    for (func, skip) in SKIP_WHEN.items()
-    if all or skip is None or max <= skip
+    for (name, func) in globals().items()
+    if (
+      callable(func)
+      and name.startswith('_')
+      and not name.startswith('__')
+      and (all or max <= getattr(func, 'skip_after', inf))
+    )
   }
 
   for n in range(min, max + 1):
@@ -48,7 +54,14 @@ def main(all, min, max):
       times[func] += sec
 
   for (func, sec) in sorted(times.items(), key=lambda x: x[1]):
-    print(f'{func.__name__} : {sec} sec')
+    print(f'{func.__name__.strip("_")} : {sec} sec')
+
+
+def skip_after(limit):
+  def decorator(func):
+    func.skip_after = limit
+    return func
+  return decorator
 
 
 def timeit(func, *args, **kwargs):
@@ -58,26 +71,27 @@ def timeit(func, *args, **kwargs):
   return (result, time() - start)
 
 
-def recursive(n):
+@skip_after(30)
+def _recursive(n):
 
   if n < 3:
     return n
-  return recursive(n - 1) + 2 * recursive(n - 2) + 3 * recursive(n - 3)
+  return _recursive(n - 1) + 2 * _recursive(n - 2) + 3 * _recursive(n - 3)
 
 
 @cache
-def recursive_caching(n):
+def _recursive_caching(n):
 
   if n < 3:
     return n
   return (
-    recursive_caching(n - 1)
-    + 2 * recursive_caching(n - 2)
-    + 3 * recursive_caching(n - 3)
+    _recursive_caching(n - 1)
+    + 2 * _recursive_caching(n - 2)
+    + 3 * _recursive_caching(n - 3)
   )
 
 
-def iterative(n):
+def _iterative(n):
 
   if n < 3:
     return n
@@ -88,7 +102,7 @@ def iterative(n):
   return results[n]
 
 
-def iterative_deque(n):
+def _iterative_deque(n):
 
   if n < 3:
     return n
@@ -99,7 +113,7 @@ def iterative_deque(n):
   return results[n]
 
 
-def iterative_deque_caching(n):
+def _iterative_deque_caching(n):
 
   if n < 3:
     return n
@@ -115,7 +129,7 @@ def iterative_deque_caching(n):
   return results[n]
 
 
-def iterative_dict(n):
+def _iterative_dict(n):
 
   if n < 3:
     return n
@@ -149,16 +163,6 @@ def get_args():
     ap.error('--max must be greater than --min')
 
   return args
-
-
-SKIP_WHEN = {
-  iterative: None,
-  iterative_deque: None,
-  iterative_deque_caching: None,
-  iterative_dict: None,
-  recursive: 30,
-  recursive_caching: None,
-}
 
 
 if __name__ == '__main__':
