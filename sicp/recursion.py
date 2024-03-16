@@ -28,8 +28,10 @@ from functools import cache
 from math import inf
 from time import perf_counter
 
+from tqdm import tqdm
 
-def main(all, min, max):
+
+def main(all_, min_, max_, quiet):
 
   times = {
     func: 0
@@ -38,11 +40,14 @@ def main(all, min, max):
       callable(func)
       and name.startswith('_')
       and not name.startswith('__')
-      and (all or max <= getattr(func, 'skip_after', inf))
+      and (all_ or max_ <= getattr(func, 'skip_after', inf))
     )
   }
 
-  for n in range(min, max + 1):
+  if not quiet:
+    progress = tqdm(total=max_ - min_ + 1)
+
+  for n in range(min_, max_ + 1):
     results = {}
     for func in times:
       try:
@@ -59,9 +64,15 @@ def main(all, min, max):
         ))
       results[func] = result
       times[func] += sec
+    if not quiet:
+      progress.update()
 
+  progress.close()
+
+  longest = max((func.__name__.strip("_") for func in times), key=len)
+  fmt = '{:%ds} : {:.9f} sec' % len(longest)
   for (func, sec) in sorted(times.items(), key=lambda x: x[1]):
-    print(f'{func.__name__.strip("_")} : {sec} sec')
+    print(fmt.format(func.__name__.strip("_"), sec))
 
 
 def skip_after(limit):
@@ -87,6 +98,7 @@ def _recursive(n):
 
 
 @cache
+@skip_after(499)
 def _recursive_caching(n):
 
   if n < 3:
@@ -176,20 +188,24 @@ def get_args():
   add = ap.add_argument
 
   add(
-    '-a', '--all', action='store_true',
+    '-a', '--all', action='store_true', dest='all_',
     help='do not skip functions that are expected to take a long time',
   )
   add(
-    '-m', '--min', type=int, default=-30,
+    '-m', '--min', type=int, default=-30, dest='min_',
     help='minimum value',
   )
   add(
-    '-M', '--max', type=int, default=30,
+    '-M', '--max', type=int, default=30, dest='max_',
     help='maximum value',
+  )
+  add(
+    '-q', '--quiet', action='store_true',
+    help='hide progress bar',
   )
 
   args = ap.parse_args()
-  if args.max < args.min:
+  if args.max_ < args.min_:
     ap.error('--max must be greater than --min')
 
   return args
